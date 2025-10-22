@@ -77,13 +77,13 @@ result, err := client.Search(graphiti.SearchQuery{
 ```go
 messages := []graphiti.Message{
     {
-        Content:  "Hello, how are you?",
-        RoleType: graphiti.RoleTypeUser,
+        Content:   "Hello, how are you?",
+        Author:    "User",
         Timestamp: time.Now(),
     },
     {
-        Content:  "I'm doing great, thank you!",
-        RoleType: graphiti.RoleTypeAssistant,
+        Content:   "I'm doing great, thank you!",
+        Author:    "Assistant",
         Timestamp: time.Now(),
     },
 }
@@ -130,8 +130,8 @@ fmt.Printf("Created node: %s\n", node.UUID)
 ```go
 messages := []graphiti.Message{
     {
-        Content:  "What were my settings?",
-        RoleType: graphiti.RoleTypeUser,
+        Content:   "What were my settings?",
+        Author:    "User",
         Timestamp: time.Now(),
     },
 }
@@ -198,8 +198,7 @@ type Message struct {
     Content           string    // The message content
     UUID              *string   // Optional UUID
     Name              string    // Optional name for episodic node
-    RoleType          RoleType  // user, assistant, or system
-    Role              *string   // Optional custom role (user name, bot name, etc.)
+    Author            string    // The author/entity that created this message
     Timestamp         time.Time // Message timestamp
     SourceDescription string    // Optional source description
 }
