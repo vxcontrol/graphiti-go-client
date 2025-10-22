@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	graphiti "github.com/pentagi/graphiti-go-client"
+	graphiti "github.com/vxcontrol/graphiti-go-client"
 )
 
 // This example demonstrates how to use the Graphiti Go client.

@@ -1,3 +1,3 @@
-module github.com/pentagi/graphiti-go-client
+module github.com/vxcontrol/graphiti-go-client
 
 go 1.23

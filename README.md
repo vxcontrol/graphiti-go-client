@@ -5,7 +5,7 @@ A Go client library for the Graphiti HTTP API.
 ## Installation
 
 ```bash
-go get github.com/pentagi/graphiti-go-client
+go get github.com/vxcontrol/graphiti-go-client
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ go get github.com/pentagi/graphiti-go-client
 ```go
 import (
     "time"
-    graphiti "github.com/pentagi/graphiti-go-client"
+    graphiti "github.com/vxcontrol/graphiti-go-client"
 )
 
 // Create a client with default settings
