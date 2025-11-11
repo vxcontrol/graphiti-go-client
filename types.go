@@ -207,11 +207,9 @@ type DiverseSearchResponse struct {
 
 // EpisodeContextSearchRequest represents an episode context search request
 type EpisodeContextSearchRequest struct {
-	Query            string    `json:"query"`
-	GroupID          *string   `json:"group_id,omitempty"`
-	AgentTypes       *[]string `json:"agent_types,omitempty"`
-	IncludeToolCalls bool      `json:"include_tool_calls,omitempty"`
-	MaxResults       int       `json:"max_results,omitempty"`
+	Query      string  `json:"query"`
+	GroupID    *string `json:"group_id,omitempty"`
+	MaxResults int     `json:"max_results,omitempty"`
 }
 
 // EpisodeContextSearchResponse represents an episode context search response
@@ -224,11 +222,10 @@ type EpisodeContextSearchResponse struct {
 
 // SuccessfulToolsSearchRequest represents a successful tools search request
 type SuccessfulToolsSearchRequest struct {
-	Query       string    `json:"query"`
-	GroupID     *string   `json:"group_id,omitempty"`
-	ToolNames   *[]string `json:"tool_names,omitempty"`
-	MinMentions int       `json:"min_mentions,omitempty"`
-	MaxResults  int       `json:"max_results,omitempty"`
+	Query       string  `json:"query"`
+	GroupID     *string `json:"group_id,omitempty"`
+	MinMentions int     `json:"min_mentions,omitempty"`
+	MaxResults  int     `json:"max_results,omitempty"`
 }
 
 // SuccessfulToolsSearchResponse represents a successful tools search response
