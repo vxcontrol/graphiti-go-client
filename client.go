@@ -193,3 +193,68 @@ func (c *Client) Clear() (*Result, error) {
 	}
 	return &result, nil
 }
+
+// Advanced Search Methods
+
+// TemporalWindowSearch searches for context within a specific time window
+func (c *Client) TemporalWindowSearch(request TemporalSearchRequest) (*TemporalSearchResponse, error) {
+	var result TemporalSearchResponse
+	if err := c.do(http.MethodPost, "/search/temporal-window", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// EntityRelationshipsSearch finds relationships and related entities from a center node
+func (c *Client) EntityRelationshipsSearch(request EntityRelationshipSearchRequest) (*EntityRelationshipSearchResponse, error) {
+	var result EntityRelationshipSearchResponse
+	if err := c.do(http.MethodPost, "/search/entity-relationships", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DiverseResultsSearch gets diverse, non-redundant results using MMR
+func (c *Client) DiverseResultsSearch(request DiverseSearchRequest) (*DiverseSearchResponse, error) {
+	var result DiverseSearchResponse
+	if err := c.do(http.MethodPost, "/search/diverse-results", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// EpisodeContextSearch searches through agent responses and tool execution records
+func (c *Client) EpisodeContextSearch(request EpisodeContextSearchRequest) (*EpisodeContextSearchResponse, error) {
+	var result EpisodeContextSearchResponse
+	if err := c.do(http.MethodPost, "/search/episode-context", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SuccessfulToolsSearch finds successful tool executions and attack patterns
+func (c *Client) SuccessfulToolsSearch(request SuccessfulToolsSearchRequest) (*SuccessfulToolsSearchResponse, error) {
+	var result SuccessfulToolsSearchResponse
+	if err := c.do(http.MethodPost, "/search/successful-tools", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// RecentContextSearch retrieves recent relevant context
+func (c *Client) RecentContextSearch(request RecentContextSearchRequest) (*RecentContextSearchResponse, error) {
+	var result RecentContextSearchResponse
+	if err := c.do(http.MethodPost, "/search/recent-context", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// EntityByLabelSearch searches for entities by label/type with optional edge filtering
+func (c *Client) EntityByLabelSearch(request EntityByLabelSearchRequest) (*EntityByLabelSearchResponse, error) {
+	var result EntityByLabelSearchResponse
+	if err := c.do(http.MethodPost, "/search/entity-by-label", request, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}

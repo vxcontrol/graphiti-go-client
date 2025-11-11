@@ -189,6 +189,161 @@ result, err := client.DeleteGroup("group-id-123")
 result, err := client.Clear()
 ```
 
+## Advanced Search Methods
+
+The client provides specialized search methods for advanced querying and analysis.
+
+### Temporal Window Search
+
+Search for all relevant context (facts, entities, and agent responses) from a specific time window:
+
+```go
+result, err := client.TemporalWindowSearch(graphiti.TemporalSearchRequest{
+    Query:      "What attacks were performed?",
+    GroupID:    &groupID,
+    TimeStart:  time.Now().Add(-24 * time.Hour),
+    TimeEnd:    time.Now(),
+    MaxResults: 15,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, edge := range result.Edges {
+    fmt.Printf("Fact: %s (score: %.2f)\n", edge.Fact, result.EdgeScores[i])
+}
+```
+
+### Entity Relationships Search
+
+Find all relationships and related entities starting from a specific discovered entity using graph traversal:
+
+```go
+result, err := client.EntityRelationshipsSearch(graphiti.EntityRelationshipSearchRequest{
+    Query:          "What vulnerabilities are related to this service?",
+    GroupID:        &groupID,
+    CenterNodeUUID: "service-uuid-123",
+    MaxDepth:       2,
+    NodeLabels:     &[]string{"VULNERABILITY", "EXPLOIT"},
+    MaxResults:     20,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+if result.CenterNode != nil {
+    fmt.Printf("Center: %s\n", result.CenterNode.Name)
+}
+for i, node := range result.Nodes {
+    fmt.Printf("Related: %s (distance: %.2f)\n", node.Name, result.NodeDistances[i])
+}
+```
+
+### Diverse Results Search
+
+Get diverse, non-redundant results using Maximal Marginal Relevance (MMR) to prevent receiving repetitive information:
+
+```go
+result, err := client.DiverseResultsSearch(graphiti.DiverseSearchRequest{
+    Query:          "Find different attack vectors",
+    GroupID:        &groupID,
+    DiversityLevel: "high", // "low", "medium", or "high"
+    MaxResults:     10,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for i, edge := range result.Edges {
+    fmt.Printf("Fact: %s (MMR score: %.2f)\n", edge.Fact, result.EdgeMMRScores[i])
+}
+```
+
+### Episode Context Search
+
+Search through complete agent responses, reasoning, and tool execution records:
+
+```go
+result, err := client.EpisodeContextSearch(graphiti.EpisodeContextSearchRequest{
+    Query:            "Show me nmap scan results",
+    GroupID:          &groupID,
+    AgentTypes:       &[]string{"pentester"},
+    IncludeToolCalls: true,
+    MaxResults:       10,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for i, episode := range result.Episodes {
+    fmt.Printf("Episode: %s (score: %.2f)\n", episode.Content, result.RerankerScores[i])
+}
+```
+
+### Successful Tools Search
+
+Find successful tool executions and attack patterns, prioritizing facts that led to successful exploitation:
+
+```go
+result, err := client.SuccessfulToolsSearch(graphiti.SuccessfulToolsSearchRequest{
+    Query:       "Find successful exploits",
+    GroupID:     &groupID,
+    ToolNames:   &[]string{"metasploit", "sqlmap"},
+    MinMentions: 2,
+    MaxResults:  15,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for i, edge := range result.Edges {
+    fmt.Printf("Fact: %s (mentions: %.0f)\n", edge.Fact, result.EdgeMentionCounts[i])
+}
+```
+
+### Recent Context Search
+
+Retrieve the most recent relevant context, biased toward recent actions and discoveries:
+
+```go
+result, err := client.RecentContextSearch(graphiti.RecentContextSearchRequest{
+    Query:         "What was discovered recently?",
+    GroupID:       &groupID,
+    RecencyWindow: "24h", // "1h", "6h", "24h", or "7d"
+    MaxResults:    10,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("Searching from %s to %s\n", result.TimeWindow.Start, result.TimeWindow.End)
+for i, edge := range result.Edges {
+    fmt.Printf("Recent fact: %s (score: %.2f)\n", edge.Fact, result.EdgeScores[i])
+}
+```
+
+### Entity By Label Search
+
+Search for specific entity types (IPs, services, vulnerabilities, tools, etc.) with label-based filtering:
+
+```go
+result, err := client.EntityByLabelSearch(graphiti.EntityByLabelSearchRequest{
+    Query:      "Find all vulnerable services",
+    GroupID:    &groupID,
+    NodeLabels: []string{"SERVICE", "VULNERABILITY"},
+    EdgeTypes:  &[]string{"HAS_VULNERABILITY", "EXPLOITS"},
+    MaxResults: 25,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for i, node := range result.Nodes {
+    fmt.Printf("Entity: %s [%s] (score: %.2f)\n", 
+        node.Name, strings.Join(node.Labels, ", "), result.NodeScores[i])
+}
+```
+
 ## Types
 
 ### Message
@@ -228,6 +383,60 @@ type FactResult struct {
 }
 ```
 
+### Advanced Search Types
+
+#### NodeResult
+
+```go
+type NodeResult struct {
+    UUID      string    // Node UUID
+    Name      string    // Entity name
+    Labels    []string  // Entity type labels (e.g., ["SERVICE", "WEB"])
+    Summary   string    // Node summary/description
+    CreatedAt time.Time // Creation timestamp
+}
+```
+
+#### EdgeResult
+
+```go
+type EdgeResult struct {
+    UUID           string     // Edge UUID
+    Name           string     // Relationship name
+    Fact           string     // The fact/relationship description
+    SourceNodeUUID string     // Source entity UUID
+    TargetNodeUUID string     // Target entity UUID
+    ValidAt        *time.Time // When relationship became valid
+    InvalidAt      *time.Time // When relationship became invalid
+    CreatedAt      time.Time  // Creation timestamp
+    ExpiredAt      *time.Time // Expiration timestamp
+}
+```
+
+#### EpisodeResult
+
+```go
+type EpisodeResult struct {
+    UUID              string    // Episode UUID
+    Content           string    // Episode content (agent response, tool output, etc.)
+    Source            string    // Source type (e.g., "tool", "agent")
+    SourceDescription string    // Detailed source description
+    CreatedAt         time.Time // Creation timestamp
+    ValidAt           time.Time // When episode occurred
+}
+```
+
+#### CommunityResult
+
+```go
+type CommunityResult struct {
+    UUID      string    // Community UUID
+    Name      string    // Community name
+    Summary   string    // Community summary
+    CreatedAt time.Time // Creation timestamp
+}
+```
+
 ## Error Handling
 
 All client methods return an error as the last return value. Always check for errors:
@@ -242,6 +451,7 @@ if err != nil {
 // Use result
 ```
 
-## Example
+## Examples
 
-See the [example](./example/main.go) for a complete working demonstration of the client, including proper handling of asynchronous operations and data verification.
+- **[Basic Example](./example/main.go)**: Complete working demonstration of the client, including proper handling of asynchronous operations and data verification.
+- **[Advanced Search Example](./advanced_search_example/advanced_search_example.go)**: Comprehensive demonstration of all advanced search methods including temporal queries, entity relationships, diverse results, episode context, successful tools, recent context, and entity label filtering.
