@@ -101,11 +101,12 @@ type Episode struct {
 
 // NodeResult represents a node result from search
 type NodeResult struct {
-	UUID      string    `json:"uuid"`
-	Name      string    `json:"name"`
-	Labels    []string  `json:"labels"`
-	Summary   string    `json:"summary"`
-	CreatedAt time.Time `json:"created_at"`
+	UUID       string                 `json:"uuid"`
+	Name       string                 `json:"name"`
+	Labels     []string               `json:"labels"`
+	Summary    string                 `json:"summary"`
+	CreatedAt  time.Time              `json:"created_at"`
+	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
 // EdgeResult represents an edge result from search

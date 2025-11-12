@@ -452,10 +452,9 @@ func testEpisodeContextSearch(client *graphiti.Client) {
 	fmt.Println("ℹ Searching for full agent responses about Metasploit...")
 
 	result, err := client.EpisodeContextSearch(graphiti.EpisodeContextSearchRequest{
-		Query:            "Metasploit EternalBlue exploitation",
-		GroupID:          stringPtr(groupID),
-		IncludeToolCalls: true,
-		MaxResults:       5,
+		Query:      "Metasploit EternalBlue exploitation",
+		GroupID:    stringPtr(groupID),
+		MaxResults: 5,
 	})
 
 	if err != nil {
@@ -641,6 +640,9 @@ func testEntityByLabelSearch(client *graphiti.Client) {
 			}
 			fmt.Printf("  - name: %s, labels: %v, summary: %s\n",
 				node.Name, node.Labels, summary)
+			if len(node.Attributes) > 0 {
+				fmt.Printf("    attributes: %v\n", node.Attributes)
+			}
 		}
 	}
 }
