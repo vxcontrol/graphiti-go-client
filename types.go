@@ -159,11 +159,12 @@ type TimeWindow struct {
 
 // TemporalSearchRequest represents a temporal window search request
 type TemporalSearchRequest struct {
-	Query      string    `json:"query"`
-	GroupID    *string   `json:"group_id,omitempty"`
-	TimeStart  time.Time `json:"time_start"`
-	TimeEnd    time.Time `json:"time_end"`
-	MaxResults int       `json:"max_results,omitempty"`
+	Query       string       `json:"query"`
+	GroupID     *string      `json:"group_id,omitempty"`
+	TimeStart   time.Time    `json:"time_start"`
+	TimeEnd     time.Time    `json:"time_end"`
+	MaxResults  int          `json:"max_results,omitempty"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // TemporalSearchResponse represents a temporal window search response
@@ -179,13 +180,14 @@ type TemporalSearchResponse struct {
 
 // EntityRelationshipSearchRequest represents an entity relationships search request
 type EntityRelationshipSearchRequest struct {
-	Query          string    `json:"query"`
-	GroupID        *string   `json:"group_id,omitempty"`
-	CenterNodeUUID string    `json:"center_node_uuid"`
-	MaxDepth       int       `json:"max_depth,omitempty"`
-	NodeLabels     *[]string `json:"node_labels,omitempty"`
-	EdgeTypes      *[]string `json:"edge_types,omitempty"`
-	MaxResults     int       `json:"max_results,omitempty"`
+	Query          string       `json:"query"`
+	GroupID        *string      `json:"group_id,omitempty"`
+	CenterNodeUUID string       `json:"center_node_uuid"`
+	MaxDepth       int          `json:"max_depth,omitempty"`
+	NodeLabels     *[]string    `json:"node_labels,omitempty"`
+	EdgeTypes      *[]string    `json:"edge_types,omitempty"`
+	MaxResults     int          `json:"max_results,omitempty"`
+	Observation    *Observation `json:"observation,omitempty"`
 }
 
 // EntityRelationshipSearchResponse represents an entity relationships search response
@@ -199,10 +201,11 @@ type EntityRelationshipSearchResponse struct {
 
 // DiverseSearchRequest represents a diverse results search request
 type DiverseSearchRequest struct {
-	Query          string  `json:"query"`
-	GroupID        *string `json:"group_id,omitempty"`
-	DiversityLevel string  `json:"diversity_level,omitempty"`
-	MaxResults     int     `json:"max_results,omitempty"`
+	Query          string       `json:"query"`
+	GroupID        *string      `json:"group_id,omitempty"`
+	DiversityLevel string       `json:"diversity_level,omitempty"`
+	MaxResults     int          `json:"max_results,omitempty"`
+	Observation    *Observation `json:"observation,omitempty"`
 }
 
 // DiverseSearchResponse represents a diverse results search response
@@ -219,9 +222,10 @@ type DiverseSearchResponse struct {
 
 // EpisodeContextSearchRequest represents an episode context search request
 type EpisodeContextSearchRequest struct {
-	Query      string  `json:"query"`
-	GroupID    *string `json:"group_id,omitempty"`
-	MaxResults int     `json:"max_results,omitempty"`
+	Query       string       `json:"query"`
+	GroupID     *string      `json:"group_id,omitempty"`
+	MaxResults  int          `json:"max_results,omitempty"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // EpisodeContextSearchResponse represents an episode context search response
@@ -234,10 +238,11 @@ type EpisodeContextSearchResponse struct {
 
 // SuccessfulToolsSearchRequest represents a successful tools search request
 type SuccessfulToolsSearchRequest struct {
-	Query       string  `json:"query"`
-	GroupID     *string `json:"group_id,omitempty"`
-	MinMentions int     `json:"min_mentions,omitempty"`
-	MaxResults  int     `json:"max_results,omitempty"`
+	Query       string       `json:"query"`
+	GroupID     *string      `json:"group_id,omitempty"`
+	MinMentions int          `json:"min_mentions,omitempty"`
+	MaxResults  int          `json:"max_results,omitempty"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // SuccessfulToolsSearchResponse represents a successful tools search response
@@ -252,10 +257,11 @@ type SuccessfulToolsSearchResponse struct {
 
 // RecentContextSearchRequest represents a recent context search request
 type RecentContextSearchRequest struct {
-	Query         string  `json:"query"`
-	GroupID       *string `json:"group_id,omitempty"`
-	RecencyWindow string  `json:"recency_window,omitempty"`
-	MaxResults    int     `json:"max_results,omitempty"`
+	Query         string       `json:"query"`
+	GroupID       *string      `json:"group_id,omitempty"`
+	RecencyWindow string       `json:"recency_window,omitempty"`
+	MaxResults    int          `json:"max_results,omitempty"`
+	Observation   *Observation `json:"observation,omitempty"`
 }
 
 // RecentContextSearchResponse represents a recent context search response
@@ -271,11 +277,12 @@ type RecentContextSearchResponse struct {
 
 // EntityByLabelSearchRequest represents an entity by label search request
 type EntityByLabelSearchRequest struct {
-	Query      string    `json:"query"`
-	GroupID    *string   `json:"group_id,omitempty"`
-	NodeLabels []string  `json:"node_labels"`
-	EdgeTypes  *[]string `json:"edge_types,omitempty"`
-	MaxResults int       `json:"max_results,omitempty"`
+	Query       string       `json:"query"`
+	GroupID     *string      `json:"group_id,omitempty"`
+	NodeLabels  []string     `json:"node_labels"`
+	EdgeTypes   *[]string    `json:"edge_types,omitempty"`
+	MaxResults  int          `json:"max_results,omitempty"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // EntityByLabelSearchResponse represents an entity by label search response

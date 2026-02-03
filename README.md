@@ -5,6 +5,14 @@ A Go client library for the Graphiti HTTP API.
 ## Features
 
 - Full coverage of Graphiti HTTP API endpoints
+- **7 specialized advanced search methods** for different query patterns:
+  - Temporal Window Search - search within time ranges
+  - Entity Relationships Search - explore entity connections
+  - Diverse Results Search - get non-redundant results using MMR
+  - Episode Context Search - search conversation history
+  - Successful Tools Search - find frequently mentioned techniques
+  - Recent Context Search - get recent information with recency bias
+  - Entity By Label Search - filter entities by type/label
 - Optional Langfuse observation tracking for monitoring and debugging
 - Configurable HTTP client and timeouts
 - Type-safe request and response structures
@@ -14,6 +22,12 @@ A Go client library for the Graphiti HTTP API.
 ```bash
 go get github.com/vxcontrol/graphiti-go-client
 ```
+
+## Quick Start
+
+See the complete working examples:
+- **[Base Usage Example](./examples/base-usage-example/main.go)** - Basic operations and common patterns
+- **[Advanced Search Example](./examples/advanced-search-example/main.go)** - All 7 advanced search methods
 
 ## Usage
 
@@ -253,6 +267,108 @@ if err != nil {
 fmt.Printf("Fact: %s\n", fact.Fact)
 ```
 
+### Advanced Search Methods
+
+The client provides specialized search methods for different use cases:
+
+#### Temporal Window Search
+
+Search for context within a specific time window:
+
+```go
+result, err := client.TemporalWindowSearch(graphiti.TemporalSearchRequest{
+    Query:      "user activities",
+    GroupID:    &groupID,
+    TimeStart:  time.Now().Add(-24 * time.Hour),
+    TimeEnd:    time.Now(),
+    MaxResults: 10,
+})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("Found %d edges, %d nodes, %d episodes\n",
+    len(result.Edges), len(result.Nodes), len(result.Episodes))
+```
+
+#### Entity Relationships Search
+
+Find relationships and related entities from a center node:
+
+```go
+result, err := client.EntityRelationshipsSearch(graphiti.EntityRelationshipSearchRequest{
+    Query:          "related entities",
+    GroupID:        &groupID,
+    CenterNodeUUID: "entity-uuid-123",
+    MaxDepth:       2,
+    NodeLabels:     &[]string{"PERSON", "ORGANIZATION"},
+    MaxResults:     20,
+})
+```
+
+#### Diverse Results Search
+
+Get diverse, non-redundant results using Maximal Marginal Relevance (MMR):
+
+```go
+result, err := client.DiverseResultsSearch(graphiti.DiverseSearchRequest{
+    Query:          "user interests and hobbies",
+    GroupID:        &groupID,
+    DiversityLevel: "medium", // "low", "medium", or "high"
+    MaxResults:     10,
+})
+```
+
+#### Episode Context Search
+
+Search through agent responses and conversation context:
+
+```go
+result, err := client.EpisodeContextSearch(graphiti.EpisodeContextSearchRequest{
+    Query:      "tool execution results",
+    GroupID:    &groupID,
+    MaxResults: 5,
+})
+```
+
+#### Successful Tools Search
+
+Find frequently mentioned successful tools or techniques:
+
+```go
+result, err := client.SuccessfulToolsSearch(graphiti.SuccessfulToolsSearchRequest{
+    Query:       "successful exploits",
+    GroupID:     &groupID,
+    MinMentions: 2,
+    MaxResults:  10,
+})
+```
+
+#### Recent Context Search
+
+Get most recent relevant context with recency bias:
+
+```go
+result, err := client.RecentContextSearch(graphiti.RecentContextSearchRequest{
+    Query:         "recent discoveries",
+    GroupID:       &groupID,
+    RecencyWindow: "6h", // e.g., "1h", "24h", "7d"
+    MaxResults:    10,
+})
+```
+
+#### Entity By Label Search
+
+Search for entities by their labels/types:
+
+```go
+result, err := client.EntityByLabelSearch(graphiti.EntityByLabelSearchRequest{
+    Query:      "vulnerable services",
+    GroupID:    &groupID,
+    NodeLabels: []string{"SERVICE", "VULNERABILITY"},
+    MaxResults: 20,
+})
+```
+
 ### Delete Operations
 
 ```go
@@ -267,161 +383,6 @@ result, err := client.DeleteGroup("group-id-123")
 
 // Clear all data (use with caution!)
 result, err := client.Clear()
-```
-
-## Advanced Search Methods
-
-The client provides specialized search methods for advanced querying and analysis.
-
-### Temporal Window Search
-
-Search for all relevant context (facts, entities, and agent responses) from a specific time window:
-
-```go
-result, err := client.TemporalWindowSearch(graphiti.TemporalSearchRequest{
-    Query:      "What attacks were performed?",
-    GroupID:    &groupID,
-    TimeStart:  time.Now().Add(-24 * time.Hour),
-    TimeEnd:    time.Now(),
-    MaxResults: 15,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for _, edge := range result.Edges {
-    fmt.Printf("Fact: %s (score: %.2f)\n", edge.Fact, result.EdgeScores[i])
-}
-```
-
-### Entity Relationships Search
-
-Find all relationships and related entities starting from a specific discovered entity using graph traversal:
-
-```go
-result, err := client.EntityRelationshipsSearch(graphiti.EntityRelationshipSearchRequest{
-    Query:          "What vulnerabilities are related to this service?",
-    GroupID:        &groupID,
-    CenterNodeUUID: "service-uuid-123",
-    MaxDepth:       2,
-    NodeLabels:     &[]string{"VULNERABILITY", "EXPLOIT"},
-    MaxResults:     20,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-if result.CenterNode != nil {
-    fmt.Printf("Center: %s\n", result.CenterNode.Name)
-}
-for i, node := range result.Nodes {
-    fmt.Printf("Related: %s (distance: %.2f)\n", node.Name, result.NodeDistances[i])
-}
-```
-
-### Diverse Results Search
-
-Get diverse, non-redundant results using Maximal Marginal Relevance (MMR) to prevent receiving repetitive information:
-
-```go
-result, err := client.DiverseResultsSearch(graphiti.DiverseSearchRequest{
-    Query:          "Find different attack vectors",
-    GroupID:        &groupID,
-    DiversityLevel: "high", // "low", "medium", or "high"
-    MaxResults:     10,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for i, edge := range result.Edges {
-    fmt.Printf("Fact: %s (MMR score: %.2f)\n", edge.Fact, result.EdgeMMRScores[i])
-}
-```
-
-### Episode Context Search
-
-Search through complete agent responses, reasoning, and tool execution records:
-
-```go
-result, err := client.EpisodeContextSearch(graphiti.EpisodeContextSearchRequest{
-    Query:            "Show me nmap scan results",
-    GroupID:          &groupID,
-    AgentTypes:       &[]string{"pentester"},
-    IncludeToolCalls: true,
-    MaxResults:       10,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for i, episode := range result.Episodes {
-    fmt.Printf("Episode: %s (score: %.2f)\n", episode.Content, result.RerankerScores[i])
-}
-```
-
-### Successful Tools Search
-
-Find successful tool executions and attack patterns, prioritizing facts that led to successful exploitation:
-
-```go
-result, err := client.SuccessfulToolsSearch(graphiti.SuccessfulToolsSearchRequest{
-    Query:       "Find successful exploits",
-    GroupID:     &groupID,
-    ToolNames:   &[]string{"metasploit", "sqlmap"},
-    MinMentions: 2,
-    MaxResults:  15,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for i, edge := range result.Edges {
-    fmt.Printf("Fact: %s (mentions: %.0f)\n", edge.Fact, result.EdgeMentionCounts[i])
-}
-```
-
-### Recent Context Search
-
-Retrieve the most recent relevant context, biased toward recent actions and discoveries:
-
-```go
-result, err := client.RecentContextSearch(graphiti.RecentContextSearchRequest{
-    Query:         "What was discovered recently?",
-    GroupID:       &groupID,
-    RecencyWindow: "24h", // "1h", "6h", "24h", or "7d"
-    MaxResults:    10,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("Searching from %s to %s\n", result.TimeWindow.Start, result.TimeWindow.End)
-for i, edge := range result.Edges {
-    fmt.Printf("Recent fact: %s (score: %.2f)\n", edge.Fact, result.EdgeScores[i])
-}
-```
-
-### Entity By Label Search
-
-Search for specific entity types (IPs, services, vulnerabilities, tools, etc.) with label-based filtering:
-
-```go
-result, err := client.EntityByLabelSearch(graphiti.EntityByLabelSearchRequest{
-    Query:      "Find all vulnerable services",
-    GroupID:    &groupID,
-    NodeLabels: []string{"SERVICE", "VULNERABILITY"},
-    EdgeTypes:  &[]string{"HAS_VULNERABILITY", "EXPLOITS"},
-    MaxResults: 25,
-})
-if err != nil {
-    log.Fatal(err)
-}
-
-for i, node := range result.Nodes {
-    fmt.Printf("Entity: %s [%s] (score: %.2f)\n", 
-        node.Name, strings.Join(node.Labels, ", "), result.NodeScores[i])
-}
 ```
 
 ## Types
@@ -580,5 +541,27 @@ if err != nil {
 
 ## Examples
 
-- **[Basic Example](./example/main.go)**: Complete working demonstration of the client, including proper handling of asynchronous operations and data verification.
-- **[Advanced Search Example](./advanced_search_example/advanced_search_example.go)**: Comprehensive demonstration of all advanced search methods including temporal queries, entity relationships, diverse results, episode context, successful tools, recent context, and entity label filtering.
+Two complete working examples are available:
+
+### [Base Usage Example](./examples/base-usage-example/main.go)
+
+Demonstrates basic operations:
+- Client initialization and health checks
+- Adding messages with Langfuse observation tracking
+- Basic search and memory retrieval
+- Entity node creation
+- Episode management
+- Proper handling of asynchronous operations
+
+### [Advanced Search Example](./examples/advanced-search-example/main.go)
+
+Comprehensive demonstration of all 7 advanced search methods:
+- **Temporal Window Search** - query within specific time ranges
+- **Entity Relationships Search** - explore entity connections and graph traversal
+- **Diverse Results Search** - get non-redundant results using MMR
+- **Episode Context Search** - search through conversation history and tool outputs
+- **Successful Tools Search** - find frequently mentioned successful techniques
+- **Recent Context Search** - retrieve recent information with recency bias
+- **Entity By Label Search** - filter entities by type/label
+
+This example uses a realistic penetration testing scenario with detailed test data to demonstrate each search method's capabilities.
