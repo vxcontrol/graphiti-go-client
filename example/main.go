@@ -5,8 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/uuid"
 	graphiti "github.com/vxcontrol/graphiti-go-client"
+
+	"github.com/google/uuid"
 )
 
 // This example demonstrates how to use the Graphiti Go client.
@@ -56,9 +57,16 @@ func main() {
 		},
 	}
 
+	observation := &graphiti.Observation{
+		ID:      uuid.New().String(),
+		TraceID: uuid.New().String(),
+		Time:    time.Now(),
+	}
+
 	addResult, err := client.AddMessages(graphiti.AddMessagesRequest{
-		GroupID:  groupID,
-		Messages: messages,
+		GroupID:     groupID,
+		Messages:    messages,
+		Observation: observation,
 	})
 	if err != nil {
 		log.Fatalf("Failed to add messages: %v", err)
@@ -93,9 +101,10 @@ func main() {
 	// Search for facts
 	fmt.Println("=== Searching for Facts ===")
 	searchResult, err := client.Search(graphiti.SearchQuery{
-		Query:    "What does the user like to do?",
-		MaxFacts: 5,
-		GroupIDs: &[]string{groupID},
+		Query:       "What does the user like to do?",
+		MaxFacts:    5,
+		GroupIDs:    &[]string{groupID},
+		Observation: observation,
 	})
 	if err != nil {
 		log.Fatalf("Search failed: %v", err)
@@ -117,9 +126,10 @@ func main() {
 		},
 	}
 	memoryResponse, err := client.GetMemory(graphiti.GetMemoryRequest{
-		GroupID:  groupID,
-		MaxFacts: 10,
-		Messages: memoryMessages,
+		GroupID:     groupID,
+		MaxFacts:    10,
+		Messages:    memoryMessages,
+		Observation: observation,
 	})
 	if err != nil {
 		log.Fatalf("Failed to get memory: %v", err)
@@ -134,10 +144,11 @@ func main() {
 	fmt.Println("=== Adding Entity Node ===")
 	entityUUID := uuid.New().String()
 	node, err := client.AddEntityNode(graphiti.AddEntityNodeRequest{
-		UUID:    entityUUID,
-		GroupID: groupID,
-		Name:    "User Interests",
-		Summary: "The user's hobbies and interests",
+		UUID:        entityUUID,
+		GroupID:     groupID,
+		Name:        "User Interests",
+		Summary:     "The user's hobbies and interests",
+		Observation: observation,
 	})
 	if err != nil {
 		log.Fatalf("Failed to add entity node: %v", err)
