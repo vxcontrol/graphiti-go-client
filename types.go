@@ -2,6 +2,13 @@ package graphiti
 
 import "time"
 
+// Observation represents Langfuse observation object to link
+type Observation struct {
+	ID      string    `json:"id"`
+	TraceID string    `json:"trace_id"`
+	Time    time.Time `json:"time"`
+}
+
 // Message represents a message in the system
 type Message struct {
 	Content           string    `json:"content"`
@@ -25,9 +32,10 @@ type HealthCheckResponse struct {
 
 // SearchQuery represents a search query request
 type SearchQuery struct {
-	GroupIDs *[]string `json:"group_ids,omitempty"`
-	Query    string    `json:"query"`
-	MaxFacts int       `json:"max_facts,omitempty"`
+	GroupIDs    *[]string    `json:"group_ids,omitempty"`
+	Query       string       `json:"query"`
+	MaxFacts    int          `json:"max_facts,omitempty"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // FactResult represents a fact result from the graph
@@ -48,10 +56,11 @@ type SearchResults struct {
 
 // GetMemoryRequest represents a request to get memory
 type GetMemoryRequest struct {
-	GroupID        string    `json:"group_id"`
-	MaxFacts       int       `json:"max_facts,omitempty"`
-	CenterNodeUUID *string   `json:"center_node_uuid"`
-	Messages       []Message `json:"messages"`
+	GroupID        string       `json:"group_id"`
+	MaxFacts       int          `json:"max_facts,omitempty"`
+	CenterNodeUUID *string      `json:"center_node_uuid"`
+	Messages       []Message    `json:"messages"`
+	Observation    *Observation `json:"observation,omitempty"`
 }
 
 // GetMemoryResponse represents the response from getting memory
@@ -61,16 +70,18 @@ type GetMemoryResponse struct {
 
 // AddMessagesRequest represents a request to add messages
 type AddMessagesRequest struct {
-	GroupID  string    `json:"group_id"`
-	Messages []Message `json:"messages"`
+	GroupID     string       `json:"group_id"`
+	Messages    []Message    `json:"messages"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // AddEntityNodeRequest represents a request to add an entity node
 type AddEntityNodeRequest struct {
-	UUID    string `json:"uuid"`
-	GroupID string `json:"group_id"`
-	Name    string `json:"name"`
-	Summary string `json:"summary,omitempty"`
+	UUID        string       `json:"uuid"`
+	GroupID     string       `json:"group_id"`
+	Name        string       `json:"name"`
+	Summary     string       `json:"summary,omitempty"`
+	Observation *Observation `json:"observation,omitempty"`
 }
 
 // EntityNode represents an entity node in the graph

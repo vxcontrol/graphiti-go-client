@@ -2,6 +2,13 @@
 
 A Go client library for the Graphiti HTTP API.
 
+## Features
+
+- Full coverage of Graphiti HTTP API endpoints
+- Optional Langfuse observation tracking for monitoring and debugging
+- Configurable HTTP client and timeouts
+- Type-safe request and response structures
+
 ## Installation
 
 ```bash
@@ -33,6 +40,41 @@ client := graphiti.NewClient("http://localhost:8000",
     graphiti.WithHTTPClient(httpClient))
 ```
 
+### Langfuse Integration
+
+The client supports optional Langfuse observation tracking for monitoring and debugging. You can attach an `Observation` object to any of the following operations:
+
+- `Search` - Track search queries
+- `GetMemory` - Track memory retrieval operations
+- `AddMessages` - Track message ingestion
+- `AddEntityNode` - Track entity node creation
+
+**⚠️ Important:** The `Observation.ID` and `Observation.TraceID` must be valid UUIDs that correspond to actual observation and trace objects in your Langfuse instance. These IDs are used to link Graphiti operations to Langfuse traces for monitoring and debugging.
+
+Example:
+
+```go
+import "github.com/google/uuid"
+
+// Create an observation with UUIDs that exist in Langfuse
+// These IDs should come from your Langfuse SDK after creating
+// an observation/trace in your Langfuse instance
+observation := &graphiti.Observation{
+    ID:      "existing-observation-uuid-from-langfuse",
+    TraceID: "existing-trace-uuid-from-langfuse",
+    Time:    time.Now(),
+}
+
+// Use it in any supported operation
+result, err := client.Search(graphiti.SearchQuery{
+    Query:       "my search query",
+    MaxFacts:    10,
+    Observation: observation,
+})
+```
+
+The observation tracking is completely optional - all operations work without it.
+
 ### Health Check
 
 ```go
@@ -59,14 +101,24 @@ for _, fact := range result.Facts {
 }
 ```
 
-### Search with Group Filtering
+### Search with Group Filtering and Observation Tracking
 
 ```go
 groupIDs := []string{"group-123", "group-456"}
+
+// Optional: Link to existing Langfuse observation
+// IDs must correspond to actual observation/trace in Langfuse
+observation := &graphiti.Observation{
+    ID:      "existing-observation-uuid",
+    TraceID: "existing-trace-uuid",
+    Time:    time.Now(),
+}
+
 result, err := client.Search(graphiti.SearchQuery{
-    GroupIDs: &groupIDs,
-    Query:    "user settings",
-    MaxFacts: 5,
+    GroupIDs:    &groupIDs,
+    Query:       "user settings",
+    MaxFacts:    5,
+    Observation: observation, // Optional
 })
 ```
 
@@ -88,9 +140,18 @@ messages := []graphiti.Message{
     },
 }
 
+// Optional: Link to existing Langfuse observation
+// IDs must correspond to actual observation/trace in Langfuse
+observation := &graphiti.Observation{
+    ID:      "existing-observation-uuid",
+    TraceID: "existing-trace-uuid",
+    Time:    time.Now(),
+}
+
 result, err := client.AddMessages(graphiti.AddMessagesRequest{
-    GroupID:  "my-group-id",
-    Messages: messages,
+    GroupID:     "my-group-id",
+    Messages:    messages,
+    Observation: observation, // Optional
 })
 if err != nil {
     log.Fatal(err)
@@ -113,11 +174,21 @@ for attempt := 1; attempt <= maxAttempts; attempt++ {
 
 ```go
 uuid := "entity-uuid-123"
+
+// Optional: Link to existing Langfuse observation
+// IDs must correspond to actual observation/trace in Langfuse
+observation := &graphiti.Observation{
+    ID:      "existing-observation-uuid",
+    TraceID: "existing-trace-uuid",
+    Time:    time.Now(),
+}
+
 node, err := client.AddEntityNode(graphiti.AddEntityNodeRequest{
-    UUID:    uuid,
-    GroupID: "my-group-id",
-    Name:    "User Preferences",
-    Summary: "Contains user's preferred settings",
+    UUID:        uuid,
+    GroupID:     "my-group-id",
+    Name:        "User Preferences",
+    Summary:     "Contains user's preferred settings",
+    Observation: observation, // Optional
 })
 if err != nil {
     log.Fatal(err)
@@ -136,10 +207,19 @@ messages := []graphiti.Message{
     },
 }
 
+// Optional: Link to existing Langfuse observation
+// IDs must correspond to actual observation/trace in Langfuse
+observation := &graphiti.Observation{
+    ID:      "existing-observation-uuid",
+    TraceID: "existing-trace-uuid",
+    Time:    time.Now(),
+}
+
 response, err := client.GetMemory(graphiti.GetMemoryRequest{
-    GroupID:  "my-group-id",
-    MaxFacts: 10,
-    Messages: messages,
+    GroupID:     "my-group-id",
+    MaxFacts:    10,
+    Messages:    messages,
+    Observation: observation, // Optional
 })
 if err != nil {
     log.Fatal(err)
@@ -346,6 +426,18 @@ for i, node := range result.Nodes {
 
 ## Types
 
+### Observation
+
+```go
+type Observation struct {
+    ID      string    // Observation UUID from Langfuse
+    TraceID string    // Trace UUID from Langfuse
+    Time    time.Time // Observation timestamp
+}
+```
+
+**Note:** The `Observation` type is used for integrating with Langfuse for tracking and observability. The `ID` and `TraceID` must be valid UUIDs corresponding to actual observation and trace objects in your Langfuse instance. This field is optional in all requests.
+
 ### Message
 
 ```go
@@ -363,9 +455,10 @@ type Message struct {
 
 ```go
 type SearchQuery struct {
-    GroupIDs *[]string // Optional group IDs to filter
-    Query    string    // Search query text
-    MaxFacts int       // Maximum number of facts to return (default: 10)
+    GroupIDs    *[]string    // Optional group IDs to filter
+    Query       string       // Search query text
+    MaxFacts    int          // Maximum number of facts to return (default: 10)
+    Observation *Observation // Optional Langfuse observation for tracking
 }
 ```
 
@@ -380,6 +473,40 @@ type FactResult struct {
     InvalidAt *time.Time // When fact became invalid
     CreatedAt time.Time  // Creation timestamp
     ExpiredAt *time.Time // Expiration timestamp
+}
+```
+
+### GetMemoryRequest
+
+```go
+type GetMemoryRequest struct {
+    GroupID        string       // Group ID
+    MaxFacts       int          // Maximum number of facts to return
+    CenterNodeUUID *string      // Optional center node UUID
+    Messages       []Message    // Messages for context
+    Observation    *Observation // Optional Langfuse observation for tracking
+}
+```
+
+### AddMessagesRequest
+
+```go
+type AddMessagesRequest struct {
+    GroupID     string       // Group ID
+    Messages    []Message    // Messages to add
+    Observation *Observation // Optional Langfuse observation for tracking
+}
+```
+
+### AddEntityNodeRequest
+
+```go
+type AddEntityNodeRequest struct {
+    UUID        string       // Entity UUID
+    GroupID     string       // Group ID
+    Name        string       // Entity name
+    Summary     string       // Optional entity summary
+    Observation *Observation // Optional Langfuse observation for tracking
 }
 ```
 
